@@ -30,10 +30,13 @@ jobs:
           channel: stable
           cache: true
 
+      
       - name: Generate Android files
         run: |
           flutter create --platforms=android --project-name kumite_scoreboard .
+          rm -f test/widget_test.dart
           python3 tool/lock_landscape.py
+
 
       - name: Install dependencies
         run: flutter pub get
