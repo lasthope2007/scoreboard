@@ -3,21 +3,29 @@ name: Build APK
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
 
-      - uses: subosito/flutter-action@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
@@ -30,10 +38,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Verify test files
+        run: |
+          git status --short
+          find test -maxdepth 1 -type f -name '*test.dart' -print
+
       - name: Run tests
         run: flutter test
 
-      - name: Build APK
+      - name: Build release APK
         run: flutter build apk --release
 
       - name: Upload APK
@@ -41,3 +54,5 @@ jobs:
         with:
           name: kumite-scoreboard-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
